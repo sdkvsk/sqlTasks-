@@ -1,0 +1,81 @@
+Лабораторна 1
+
+-- Видалення попередньої версії бази даних, якщо існує
+DROP DATABASE IF EXISTS your_database_name;
+
+-- Створення бази даних
+CREATE DATABASE your_database_name;
+
+-- Використання створеної бази даних
+USE your_database_name;
+
+-- Створення таблиці
+CREATE TABLE Books (
+    Code INT PRIMARY KEY,
+    Novinka INT NOT NULL,
+    Nazva VARCHAR(255) NOT NULL,
+    Cena DECIMAL(10, 2) NOT NULL,
+    Vidavnictvo VARCHAR(255) NOT NULL,
+    Storinky INT NOT NULL,
+    Format VARCHAR(20) NOT NULL,
+    Data DATE NOT NULL,
+    Tirazh INT NOT NULL,
+    Tema VARCHAR(255) NOT NULL,
+    Kategoria VARCHAR(255) NOT NULL,
+    Avtor VARCHAR(20) DEFAULT NULL,
+    UNIQUE INDEX idx_Code (Code),
+    INDEX idx_Nazva (Nazva),
+    INDEX idx_Data (Data)
+);
+
+-- Створення індексу
+CREATE INDEX idx_Tema ON Books(Tema);
+
+-- Завантаження даних в таблицю
+INSERT INTO Books VALUES
+(2, 5110, 'Апаратні засоби мультимедіа. Відеосистема', 15.51, 'Видавнича група BHV', 400, '70x100/16', '2000-07-24', 5000, 'Використання ПК в цілому', 'Підручники', NULL, NULL),
+-- Додайте інші записи...
+
+-- Додатковий індекс
+CREATE INDEX idx_Avtor ON Books(Avtor);
+
+SQL-скрипт для створення бази даних та таблиці:
+
+-- Видалення попередньої версії бази даних, якщо існує
+DROP DATABASE IF EXISTS your_database_name;
+
+-- Створення бази даних
+CREATE DATABASE your_database_name;
+
+-- Використання створеної бази даних
+USE your_database_name;
+
+-- Створення таблиці
+CREATE TABLE Books (
+    Code INT PRIMARY KEY,
+    Novinka INT NOT NULL,
+    Nazva VARCHAR(255) NOT NULL,
+    Cena DECIMAL(10, 2) NOT NULL,
+    Vidavnictvo VARCHAR(255) NOT NULL,
+    Storinky INT NOT NULL,
+    Format VARCHAR(20) NOT NULL,
+    Data DATE NOT NULL,
+    Tirazh INT NOT NULL,
+    Tema VARCHAR(255) NOT NULL,
+    Kategoria VARCHAR(255) NOT NULL,
+    Avtor VARCHAR(20) DEFAULT NULL,
+    UNIQUE INDEX idx_Code (Code),
+    INDEX idx_Nazva (Nazva),
+    INDEX idx_Data (Data)
+);
+
+-- Створення індексу
+CREATE INDEX idx_Tema ON Books(Tema);
+
+-- Завантаження даних в таблицю
+INSERT INTO Books VALUES
+(2, 5110, 'Апаратні засоби мультимедіа. Відеосистема', 15.51, 'Видавнича група BHV', 400, '70x100/16', '2000-07-24', 5000, 'Використання ПК в цілому', 'Підручники', NULL, NULL),
+-- Додайте інші записи...
+
+-- Додатковий індекс
+CREATE INDEX idx_Avtor ON Books(Avtor);
