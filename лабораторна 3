@@ -1,0 +1,20 @@
+SELECT * FROM Books WHERE Ціна IS NULL OR Ціна = 0;
+SELECT * FROM Books WHERE Ціна IS NOT NULL AND Тираж IS NULL;
+SELECT * FROM Books WHERE Дата IS NULL;
+SELECT * FROM Books WHERE DATEDIFF(CURDATE(), Дата) <= 365;
+SELECT * FROM Books WHERE Новинка = 'No' ORDER BY Ціна ASC;
+SELECT * FROM Books WHERE Сторінки BETWEEN 300 AND 400 ORDER BY Назва DESC;
+SELECT * FROM Books WHERE Ціна BETWEEN 20 AND 40 ORDER BY Дата DESC;
+SELECT * FROM Books ORDER BY Назва ASC, Ціна DESC;
+SELECT * FROM Books WHERE Ціна / Сторінки < 0.10;
+SELECT LENGTH(Назва) AS 'Число символів', UPPER(SUBSTRING(Назва, 1, 20)) AS 'Перші 20 символів' FROM Books;
+SELECT CONCAT(UPPER(SUBSTRING(Назва, 1, 10)), '...', UPPER(SUBSTRING(Назва, -10))) AS 'Прописні букви' FROM Books;
+SELECT Назва, Дата, DAY(Дата) AS 'День', MONTH(Дата) AS 'Місяць', YEAR(Дата) AS 'Рік' FROM Books;
+SELECT Назва, Дата, DATE_FORMAT(Дата, '%d/%m/%Y') AS 'Дата в форматі' FROM Books;
+SELECT Код, Ціна, Ціна, Ціна * 0.036 AS 'Ціна в євро', Ціна * 2.56 AS 'Ціна в руб.' FROM Books;
+SELECT Код, Ціна, FLOOR(Ціна) AS 'Ціна без копійок', ROUND(Ціна) AS 'Ціна округлена' FROM Books;
+INSERT INTO Books VALUES (нові дані);
+INSERT INTO Books (Код, Новинка, Назва, Ціна, Тема) VALUES (нові дані);
+DELETE FROM Books WHERE YEAR(Дата) < 1990;
+UPDATE Books SET Дата = CURDATE() WHERE Дата IS NULL;
+UPDATE Books SET Новинка = 'Yes' WHERE YEAR(Дата)
