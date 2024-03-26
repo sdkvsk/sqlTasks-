@@ -1,81 +1,76 @@
 Лабораторна 1
 
--- Видалення попередньої версії бази даних, якщо існує
-DROP DATABASE IF EXISTS your_database_name;
+1.Проаналізувати приклад універсального відношення. Вирішити яка його колонка буде головним ключем, які поля обов'язкові для введення, які поля мають значення за замовчуванням, які поля мають область допустимих значень, які поля необхідно проіндексувати.
+Обов’язкові для введення поля можуть бути “Код”, “Назва”, “Ціна”, “Видавництво”, “Тема”, “Категорія”, оскільки ці дані зазвичай потрібні для кожної книги.
+Поля “Новинка”, “Формат”, “Дата” можуть мати значення за замовчуванням, наприклад, “No” для “Новинка”, “70х100/16” для “Формат” і сьогоднішня дата для “Дата”.
+Область допустимих значень може бути встановлена для полів, як “Ціна” (позитивне число), “Тираж” (позитивне ціле число).
+Індексація може бути корисною для полів, які часто використовуються в запитах, наприклад, “Код”, “Назва”, “Видавництво”, “Тема”, “Категорія”.
 
--- Створення бази даних
-CREATE DATABASE your_database_name;
+2.    Скласти SQL-script, який виконує:
+   a. Видалення попередньої версії бази даних
+   b. Створення бази даних
+   c. Створення таблиці на основі універсального відношення. Команда для створення таблиці повинна містити головний ключ, обмеження типу null / not null, default, check.   ЗВЕРНІТЬ УВАГУ!!! Усі поля повинні мати назви латиницею.
 
--- Використання створеної бази даних
-USE your_database_name;
+-- a. Видалення попередньої версії бази даних
+DROP DATABASE IF EXISTS BooksDB;
 
--- Створення таблиці
+-- b. Створення бази даних
+CREATE DATABASE BooksDB;
+USE BooksDB;
+
+-- c. Створення таблиці на основі універсального відношення
 CREATE TABLE Books (
+    N INT,
     Code INT PRIMARY KEY,
-    Novinka INT NOT NULL,
-    Nazva VARCHAR(255) NOT NULL,
-    Cena DECIMAL(10, 2) NOT NULL,
-    Vidavnictvo VARCHAR(255) NOT NULL,
-    Storinky INT NOT NULL,
-    Format VARCHAR(20) NOT NULL,
-    Data DATE NOT NULL,
-    Tirazh INT NOT NULL,
-    Tema VARCHAR(255) NOT NULL,
-    Kategoria VARCHAR(255) NOT NULL,
-    Avtor VARCHAR(20) DEFAULT NULL,
-    UNIQUE INDEX idx_Code (Code),
-    INDEX idx_Nazva (Nazva),
-    INDEX idx_Data (Data)
+    New VARCHAR(3) NOT NULL DEFAULT 'No',
+    Name VARCHAR(255) NOT NULL,
+    Price DECIMAL(5,2) NOT NULL CHECK (Price > 0),
+    Publisher VARCHAR(255) NOT NULL,
+    Pages INT,
+    Format VARCHAR(10) NOT NULL DEFAULT '70x100/16',
+    Date DATE NOT NULL DEFAULT CURRENT_DATE,
+    Circulation INT NOT NULL CHECK (Circulation > 0),
+    Topic VARCHAR(255) NOT NULL,
+    Category VARCHAR(255) NOT NULL
 );
 
--- Створення індексу
-CREATE INDEX idx_Tema ON Books(Tema);
+-- d. Створення додаткового індексу
+CREATE INDEX idx_publisher ON Books (Publisher);
+CREATE INDEX idx_topic ON Books (Topic);
+CREATE INDEX idx_category ON Books (Category);
 
--- Завантаження даних в таблицю
-INSERT INTO Books VALUES
-(2, 5110, 'Апаратні засоби мультимедіа. Відеосистема', 15.51, 'Видавнича група BHV', 400, '70x100/16', '2000-07-24', 5000, 'Використання ПК в цілому', 'Підручники', NULL, NULL),
--- Додайте інші записи...
+-- e. Завантаження даних в таблицю
+-- Зверніть увагу, що вам потрібно замінити 'path/to/your/data.csv' на шлях до вашого CSV-файлу з даними
+LOAD DATA INFILE 'path/to/your/data.csv' 
+INTO TABLE Books 
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
 
--- Додатковий індекс
-CREATE INDEX idx_Avtor ON Books(Avtor);
 
-SQL-скрипт для створення бази даних та таблиці:
 
--- Видалення попередньої версії бази даних, якщо існує
-DROP DATABASE IF EXISTS your_database_name;
 
--- Створення бази даних
-CREATE DATABASE your_database_name;
 
--- Використання створеної бази даних
-USE your_database_name;
+3.    Скласти SQL-script, який виконує:
+   a. Додавання в таблицю нового текстового поля "Автор", розміром 15 символів
+   b. Збільшення розміру текстового поля "Автор" до 20 символів
+   c. Видалення текстового поля "Автор" з таблиці
+   d. Зміна порядку сортування індексу і призначення його унікальності
+   e. Видалення індексу
 
--- Створення таблиці
-CREATE TABLE Books (
-    Code INT PRIMARY KEY,
-    Novinka INT NOT NULL,
-    Nazva VARCHAR(255) NOT NULL,
-    Cena DECIMAL(10, 2) NOT NULL,
-    Vidavnictvo VARCHAR(255) NOT NULL,
-    Storinky INT NOT NULL,
-    Format VARCHAR(20) NOT NULL,
-    Data DATE NOT NULL,
-    Tirazh INT NOT NULL,
-    Tema VARCHAR(255) NOT NULL,
-    Kategoria VARCHAR(255) NOT NULL,
-    Avtor VARCHAR(20) DEFAULT NULL,
-    UNIQUE INDEX idx_Code (Code),
-    INDEX idx_Nazva (Nazva),
-    INDEX idx_Data (Data)
-);
+-- a. Додавання в таблицю нового текстового поля "Автор", розміром 15 символів
+ALTER TABLE Books ADD Author VARCHAR(15);
 
--- Створення індексу
-CREATE INDEX idx_Tema ON Books(Tema);
+-- b. Збільшення розміру текстового поля "Автор" до 20 символів
+ALTER TABLE Books MODIFY Author VARCHAR(20);
 
--- Завантаження даних в таблицю
-INSERT INTO Books VALUES
-(2, 5110, 'Апаратні засоби мультимедіа. Відеосистема', 15.51, 'Видавнича група BHV', 400, '70x100/16', '2000-07-24', 5000, 'Використання ПК в цілому', 'Підручники', NULL, NULL),
--- Додайте інші записи...
+-- c. Видалення текстового поля "Автор" з таблиці
+ALTER TABLE Books DROP COLUMN Author;
 
--- Додатковий індекс
-CREATE INDEX idx_Avtor ON Books(Avtor);
+-- d. Зміна порядку сортування індексу і призначення його унікальності
+-- Припустимо, що назва вашого індексу - `idx_books`
+CREATE UNIQUE INDEX idx_books ON Books (column_name DESC);
+
+-- e. Видалення індексу
+DROP INDEX idx_books ON Books;
