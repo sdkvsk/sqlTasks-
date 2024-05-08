@@ -1,1 +1,129 @@
+Лабораторна 6
+
+1.
+ SELECT b.Title, b.Price, b.Publisher
+FROM Books b
+INNER JOIN OtherTable o ON b.BookID = o.BookID
+WHERE b.PublishDate > '2000-01-01';
+
+2.
+SELECT b.Title, b.Category
+FROM Books b
+INNER JOIN OtherTable o ON b.BookID = o.BookID;
+
+3.
+SELECT Title, Price, Publisher, Format
+FROM Books;
+
+4.
+SELECT Topic, Category, Title, Publisher
+FROM Books
+WHERE Topic = 'Використання ПК в цілому' AND Category = 'Підручники';
+
+5.
+SELECT Title, Publisher, PublishDate
+FROM Books
+WHERE Publisher = 'BHV' AND YEAR(PublishDate) > 2000;
+
+6.
+SELECT Category, SUM(Pages) AS TotalPages
+FROM Books
+GROUP BY Category
+ORDER BY TotalPages DESC;
+
+7.
+SELECT AVG(Price) AS AveragePrice
+FROM Books
+WHERE Topic = 'Використання ПК в цілому' AND Category = 'Linux';
+
+8.
+SELECT *
+FROM Books b
+INNER JOIN OtherTable o ON b.BookID = o.BookID
+WHERE b.PublishDate > '2000-01-01';
+
+9.
+SELECT *
+FROM Books b
+INNER JOIN OtherTable o ON b.BookID = o.BookID;
+
+
+10.
+SELECT *
+FROM Books b
+LEFT JOIN OtherTable o ON b.BookID = o.BookID;
+
+11.
+SELECT b1.Title AS Book1, b2.Title AS Book2, b1.Pages AS PageCount
+FROM Books b1
+JOIN Books b2 ON b1.Pages = b2.Pages AND b1.BookID < b2.BookID;
+
+12.
+SELECT b1.Title AS Book1, b2.Title AS Book2, b3.Title AS Book3, b1.Price AS BookPrice
+FROM Books b1
+JOIN Books b2 ON b1.Price = b2.Price
+JOIN Books b3 ON b1.Price = b3.Price
+WHERE b1.BookID < b2.BookID AND b2.BookID < b3.BookID;
+
+13.
+SELECT *
+FROM Books
+WHERE Category = 'C++';
+
+14.
+SELECT *
+FROM Books
+WHERE Publisher = 'BHV' AND YEAR(PublishDate) > 2000;
+
+15.
+SELECT DISTINCT Publisher
+FROM Books b1
+WHERE EXISTS (
+    SELECT *
+    FROM Books b2
+    WHERE b2.Publisher = b1.Publisher AND b2.Pages > 400
+);
+
+16.
+SELECT Category
+FROM Books b1
+GROUP BY Category
+HAVING COUNT(*) > 3;
+
+17.
+SELECT *
+FROM Books
+WHERE EXISTS (
+    SELECT *
+    FROM Books
+    WHERE Publisher = 'BHV'
+);
+
+18.
+SELECT *
+FROM Books
+WHERE NOT EXISTS (
+    SELECT *
+    FROM Books
+    WHERE Publisher = 'BHV'
+);
+
+19.
+SELECT Topic AS Title
+FROM Books
+UNION
+SELECT Category AS Title
+FROM Books
+ORDER BY Title;
+
+20.
+SELECT SUBSTRING_INDEX(Title, ' ', 1) AS FirstWord
+FROM Books
+UNION
+SELECT Title
+FROM Books
+UNION
+SELECT Category
+FROM Books
+ORDER BY FirstWord DESC;
 
