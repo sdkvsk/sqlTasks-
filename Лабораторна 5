@@ -1,0 +1,74 @@
+Лабораторна 5
+
+1.
+Створення таблиці "Книги" (Books):
+Поля: Код (PRIMARY KEY), Назва, Ціна, Сторінки, Дата, Видавництво_id (FOREIGN KEY), Тема_id (FOREIGN KEY), Категорія_id (FOREIGN KEY).
+Створення таблиці "Видавництва" (Publishers):
+Поля: id (PRIMARY KEY), Назва, Адреса, Телефон.
+Створення таблиці "Теми" (Themes):
+Поля: id (PRIMARY KEY), Назва.
+Створення таблиці "Категорії" (Categories):
+Поля: id (PRIMARY KEY), Назва.
+
+2.
+-- Створення таблиці Books
+CREATE TABLE Books (
+    Code INT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    Price DECIMAL(10, 2) NOT NULL,
+    Pages INT NOT NULL,
+    Date DATE NOT NULL,
+    Publisher_id INT,
+    Theme_id INT,
+    Category_id INT,
+    FOREIGN KEY (Publisher_id) REFERENCES Publishers(id),
+    FOREIGN KEY (Theme_id) REFERENCES Themes(id),
+    FOREIGN KEY (Category_id) REFERENCES Categories(id)
+);
+
+-- Створення таблиці Publishers
+CREATE TABLE Publishers (
+    id INT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    Address VARCHAR(255),
+    Phone VARCHAR(20)
+);
+
+-- Створення таблиці Themes
+CREATE TABLE Themes (
+    id INT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL
+);
+
+-- Створення таблиці Categories
+CREATE TABLE Categories (
+    id INT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL
+);
+
+3.
+-- Завантаження даних у таблицю Publishers
+INSERT INTO Publishers (id, Name, Address, Phone)
+VALUES
+(1, 'Видавнича група BHV', 'Адреса BHV', '123-456-7890'),
+(2, 'Вільямс', 'Адреса Вільямс', '987-654-3210');
+
+
+4.
+-- Додавання зовнішнього ключа Publisher_id
+ALTER TABLE Books
+ADD CONSTRAINT fk_publisher
+FOREIGN KEY (Publisher_id)
+REFERENCES Publishers(id);
+
+-- Додавання зовнішнього ключа Theme_id
+ALTER TABLE Books
+ADD CONSTRAINT fk_theme
+FOREIGN KEY (Theme_id)
+REFERENCES Themes(id);
+
+-- Додавання зовнішнього ключа Category_id
+ALTER TABLE Books
+ADD CONSTRAINT fk_category
+FOREIGN KEY (Category_id)
+REFERENCES Categories(id);
