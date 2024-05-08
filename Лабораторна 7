@@ -1,0 +1,87 @@
+Лабораторна 7
+
+1.
+SELECT Title, Price, Publisher, Format
+FROM Books;
+
+2.
+SELECT Topic, Category, Title, Publisher
+FROM Books
+WHERE Topic = 'Використання ПК' AND Category = 'Linux';
+
+3.
+SELECT *
+FROM Books
+WHERE Publisher = 'BHV' AND YEAR(PublishDate) > 2000;
+
+4.
+SELECT Category, SUM(Pages) AS TotalPages
+FROM Books
+GROUP BY Category
+ORDER BY TotalPages DESC; -- або ORDER BY TotalPages ASC для зростання
+
+5.
+SELECT AVG(Price) AS AveragePrice
+FROM Books
+WHERE Topic = 'Використання ПК' AND Category = 'Linux';
+
+6.
+SELECT *
+FROM Books;
+
+7.
+SELECT b1.Title AS Book1, b2.Title AS Book2, b1.Pages AS PageCount
+FROM Books b1
+JOIN Books b2 ON b1.Pages = b2.Pages AND b1.BookID < b2.BookID;
+
+8.
+SELECT b1.Title AS Book1, b2.Title AS Book2, b3.Title AS Book3, b1.Price AS BookPrice
+FROM Books b1
+JOIN Books b2 ON b1.Price = b2.Price
+JOIN Books b3 ON b1.Price = b3.Price
+WHERE b1.BookID < b2.BookID AND b2.BookID < b3.BookID;
+
+9.
+SELECT *
+FROM Books
+WHERE Category = 'C++';
+
+10.
+SELECT DISTINCT Publisher
+FROM Books
+WHERE Pages > 400;
+
+11.
+SELECT Category
+FROM Books
+GROUP BY Category
+HAVING COUNT(*) > 3;
+
+12.
+SELECT *
+FROM Books
+WHERE Publisher = 'BHV';
+
+
+13.
+SELECT *
+FROM Books
+WHERE Publisher <> 'BHV';
+
+14.
+SELECT Topic AS Title
+FROM Books
+UNION
+SELECT Category AS Title
+FROM Books
+ORDER BY Title;
+
+15.
+SELECT SUBSTRING_INDEX(Title, ' ', 1) AS FirstWord
+FROM Books
+UNION
+SELECT Category
+FROM Books
+GROUP BY Category
+ORDER BY FirstWord DESC;
+
