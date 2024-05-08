@@ -1,0 +1,89 @@
+Лабораторна 9
+
+1.
+-- Створення скалярної функції для обрахунку загальної вартості книг за певний рік
+CREATE FUNCTION GetTotalBookCostByYear
+(
+    @Year INT
+)
+RETURNS DECIMAL(10, 2)
+AS
+BEGIN
+    DECLARE @TotalCost DECIMAL(10, 2);
+
+    SELECT @TotalCost = SUM(Price)
+    FROM Books
+    WHERE YEAR(PublishDate) = @Year;
+
+    RETURN ISNULL(@TotalCost, 0);
+END;
+
+2.
+-- Створення табличної функції для отримання списку книг за певний рік
+CREATE FUNCTION GetBooksByYear
+(
+    @Year INT
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT BookID, Title, Author, Price
+    FROM Books
+    WHERE YEAR(PublishDate) = @Year
+);
+
+3.
+-- Створення функції для розбору рядка зі списком видавництв
+CREATE FUNCTION ParsePublishersList
+(
+    @PublisherList VARCHAR(MAX)
+)
+RETURNS VARCHAR(MAX)
+AS
+BEGIN
+    DECLARE @ParsedList VARCHAR(MAX);
+    DECLARE @Counter INT = 1;
+
+    SET @ParsedList = '';
+
+    WHILE @Counter <= LEN(@PublisherList)
+    BEGIN
+        IF SUBSTRING(@PublisherList, @Counter, 1) = ';'
+        BEGIN
+            SET @ParsedList = @ParsedList + CAST(CHAR(13) + CHAR(10) AS VARCHAR(2)) + RTRIM(LTRIM(SUBSTRING(@PublisherList, 1, @Counter - 1)));
+            SET @PublisherList = SUBSTRING(@PublisherList, @Counter + 1, LEN(@PublisherList) - @Counter);
+            SET @Counter = 1;
+        END
+        ELSE
+        BEGIN
+            SET @Counter = @Counter + 1;
+        END
+    END
+
+    SET @ParsedList = @ParsedList + CHAR(13) + CHAR(10) + RTRIM(LTRIM(@PublisherList));
+    RETURN @ParsedList;
+END;
+
+4-5.
+-- Оголошення та використання курсора для виводу списка книг за певний рік
+DECLARE @BookTitle NVARCHAR(255);
+DECLARE @PublishYear INT = 2023; -- Приклад: вказуємо рік
+
+DECLARE BookCursor CURSOR FOR
+    SELECT Title
+    FROM Books
+    WHERE YEAR(PublishDate) = @PublishYear;
+
+OPEN BookCursor;
+
+FETCH NEXT FROM BookCursor INTO @BookTitle;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    PRINT @BookTitle;
+    FETCH NEXT FROM BookCursor INTO @BookTitle;
+END;
+
+CLOSE BookCursor;
+DEALLOCATE BookCursor;
