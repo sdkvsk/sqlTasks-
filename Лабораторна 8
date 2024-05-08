@@ -1,0 +1,170 @@
+Лабораторна 8
+
+-- Тригер для ділового правила 1: Кількість тем може бути в діапазоні від 5 до 10.
+CREATE TRIGGER CheckTopicCount
+ON Topics
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    IF (SELECT COUNT(*) FROM Topics) < 5 OR (SELECT COUNT(*) FROM Topics) > 10
+    BEGIN
+        RAISEERROR ('Кількість тем повинна бути в діапазоні від 5 до 10.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+GO
+
+-- Тригер для ділового правила 2: Новинкою може бути тільки книга видана в поточному році.
+CREATE TRIGGER CheckNewRelease
+ON Books
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @CurrentYear INT;
+    SET @CurrentYear = YEAR(GETDATE());
+
+    IF EXISTS (SELECT * FROM INSERTED WHERE PublishDate <> CONVERT(DATE, '01-01-' + CAST(@CurrentYear AS VARCHAR(4))))
+    BEGIN
+        RAISEERROR ('Новинкою може бути тільки книга видана в поточному році.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+GO
+
+-- Тригер для ділового правила 3: Цінові обмеження в залежності від кількості сторінок.
+CREATE TRIGGER CheckPriceBasedOnPages
+ON Books
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (SELECT * FROM INSERTED WHERE Pages <= 100 AND Price > 10)
+    BEGIN
+        RAISEERROR ('Книга з кількістю сторінок до 100 не може коштувати більше 10 $.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+    ELSE IF EXISTS (SELECT * FROM INSERTED WHERE Pages <= 200 AND Price > 20)
+    BEGIN
+        RAISEERROR ('Книга з кількістю сторінок до 200 не може коштувати більше 20 $.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+    ELSE IF EXISTS (SELECT * FROM INSERTED WHERE Pages <= 300 AND Price > 30)
+    BEGIN
+        RAISEERROR ('Книга з кількістю сторінок до 300 не може коштувати більше 30 $.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+GO
+
+-- Тригер для ділового правила 4: Обмеження на видавництва залежно від накладу.
+CREATE TRIGGER CheckPublisherLimit
+ON Books
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (SELECT * FROM INSERTED WHERE Publisher = 'BHV' AND Edition < 5000)
+    BEGIN
+        RAISEERROR ('Видавництво "BHV" не випускає книги накладом меншим 5000.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+    ELSE IF EXISTS (SELECT * FROM INSERTED WHERE Publisher = 'Diasoft' AND Edition < 10000)
+    BEGIN
+        RAISEERROR ('Видавництво "Diasoft" не випускає книги накладом меншим 10000.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+GO
+
+-- Тригер для ділового правила 5: Книги з однаковим кодом повинні мати однакові дані.
+CREATE TRIGGER CheckSameBookData
+ON Books
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (SELECT BookID, COUNT(*) FROM INSERTED GROUP BY BookID HAVING COUNT(*) > 1)
+    BEGIN
+        RAISEERROR ('Книги з однаковим кодом повинні мати однакові дані.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+GO
+
+-- Тригер для ділового правила 6: Інформація про видалення книги із зазначенням кількості видалених рядків.
+CREATE TRIGGER LogBookDeletion
+ON Books
+INSTEAD OF DELETE
+AS
+BEGIN
+    IF NOT USER = 'dbo'
+    BEGIN
+        RAISEERROR ('Видалення книг заборонене для користувачів, що не є "dbo".', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+    ELSE
+    BEGIN
+        DECLARE @DeletedRowCount INT;
+        SELECT @DeletedRowCount = COUNT(*) FROM DELETED;
+
+        PRINT 'Кількість видалених рядків: ' + CAST(@DeletedRowCount AS VARCHAR(10));
+        DELETE FROM Books WHERE BookID IN (SELECT BookID FROM DELETED);
+    END
+END;
+GO
+
+-- Тригер для ділового правила 7: Користувач "dbo" не має права змінювати ціну книги.
+CREATE TRIGGER PreventPriceChange
+ON Books
+AFTER UPDATE
+AS
+BEGIN
+    IF USER = 'dbo' AND EXISTS (SELECT * FROM INSERTED WHERE Price <> DELETED.Price)
+    BEGIN
+        RAISEERROR ('Користувач "dbo" не має права змінювати ціну книги.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+GO
+
+-- Тригер для ділового правила 8: Видавництва ДМК і Еком підручники не видають.
+CREATE TRIGGER PreventManualsByDMKAndEkom
+ON Books
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (SELECT * FROM INSERTED WHERE Publisher IN ('ДМК', 'Еком') AND Topic = 'Підручники')
+    BEGIN
+        RAISEERROR ('Видавництва ДМК і Еком підручники не видають.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+GO
+
+-- Тригер для ділового правила 9: Обмеження на кількість новинок за місяць.
+CREATE TRIGGER CheckNewReleasesPerMonth
+ON Books
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @CurrentMonth INT;
+    SET @CurrentMonth = MONTH(GETDATE());
+
+    IF (SELECT COUNT(*) FROM INSERTED WHERE Publisher IN ('BHV', 'Diasoft') AND YEAR(PublishDate) = YEAR(GETDATE()) AND MONTH(PublishDate) = @CurrentMonth) > 10
+    BEGIN
+        RAISEERROR ('Видавництва не можуть випустити більше 10 новинок протягом одного місяця поточного року.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+GO
+
+-- Тригер для ділового правила 10: Видавництво BHV не випускає книги формату 60х88 / 16.
+CREATE TRIGGER CheckBHVBookFormat
+ON Books
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (SELECT * FROM INSERTED WHERE Publisher = 'BHV' AND Format = '60х88 / 16')
+    BEGIN
+        RAISEERROR ('Видавництво BHV не випускає книги формату 60х88 / 16.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+GO
