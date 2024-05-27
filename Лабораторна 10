@@ -1,0 +1,46 @@
+Лабораторна 10
+
+-- Step 1: Create a user-defined data type for storing student grades
+EXEC sp_addtype grade_type, 'tinyint', 'NULL';
+
+-- Step 2: Create a default object with a value of 3
+CREATE DEFAULT grade_default AS 3;
+
+-- Step 3: Bind the default object to the user-defined data type for the grade
+EXEC sp_bindefault 'grade_default', 'grade_type';
+
+-- Step 4: Retrieve information about the user-defined data type
+EXEC sp_help 'grade_type';
+
+-- Step 5: Create a rule object and bind it to the user-defined data type for the grade
+CREATE RULE grade_rule AS @value >= 1 AND @value <= 5;
+EXEC sp_bindrule 'grade_rule', 'grade_type';
+
+-- Step 6: Create a table "StudentPerformance" using the new data type
+CREATE TABLE StudentPerformance (
+    StudentID INT PRIMARY KEY,
+    Math grade_type,
+    Science grade_type,
+    Literature grade_type,
+    History grade_type,
+    Geography grade_type
+);
+
+-- Step 7: Unbind all bindings and remove the user-defined data type, default, and rule
+-- Unbind the rule
+EXEC sp_unbindrule 'grade_type';
+
+-- Unbind the default
+EXEC sp_unbindefault 'grade_type';
+
+-- Drop the table
+DROP TABLE StudentPerformance;
+
+-- Drop the rule
+DROP RULE grade_rule;
+
+-- Drop the default
+DROP DEFAULT grade_default;
+
+-- Drop the user-defined data type
+EXEC sp_droptype 'grade_type';
