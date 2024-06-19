@@ -1,87 +1,179 @@
-Лабораторна 7
+1. Вивести значення наступних колонок: назва книги, ціна, назва видавництва, формат
 
-1.
-SELECT Title, Price, Publisher, Format
-FROM Books;
+CREATE PROCEDURE GetBookDetails
+AS
+BEGIN
+    SELECT НазваКниги, Ціна, НазваВидавництва, Формат
+    FROM Books;
+END;
 
-2.
-SELECT Topic, Category, Title, Publisher
-FROM Books
-WHERE Topic = 'Використання ПК' AND Category = 'Linux';
+2. Вивести значення наступних колонок: тема, категорія, назва книги, назва видавництва. Фільтр по темам і категоріям
 
-3.
-SELECT *
-FROM Books
-WHERE Publisher = 'BHV' AND YEAR(PublishDate) > 2000;
+CREATE PROCEDURE GetBooksByTopicAndCategory
+    @Тема NVARCHAR(50),
+    @Категорія NVARCHAR(50)
+AS
+BEGIN
+    SELECT Тема, Категорія, НазваКниги, НазваВидавництва
+    FROM Books
+    WHERE Тема = @Тема AND Категорія = @Категорія;
+END;
 
-4.
-SELECT Category, SUM(Pages) AS TotalPages
-FROM Books
-GROUP BY Category
-ORDER BY TotalPages DESC; -- або ORDER BY TotalPages ASC для зростання
+3. Вивести книги видавництва 'BHV', видані після 2000 р
 
-5.
-SELECT AVG(Price) AS AveragePrice
-FROM Books
-WHERE Topic = 'Використання ПК' AND Category = 'Linux';
+CREATE PROCEDURE GetBooksByPublisherAndYear
+    @Publisher NVARCHAR(50),
+    @Year INT
+AS
+BEGIN
+    SELECT НазваКниги, РікВидання
+    FROM Books
+    WHERE НазваВидавництва = @Publisher AND РікВидання > @Year;
+END;
 
-6.
-SELECT *
-FROM Books;
+4. Вивести загальну кількість сторінок по кожній назві категорії. Фільтр по спадаючій / зростанню кількості сторінок
 
-7.
-SELECT b1.Title AS Book1, b2.Title AS Book2, b1.Pages AS PageCount
-FROM Books b1
-JOIN Books b2 ON b1.Pages = b2.Pages AND b1.BookID < b2.BookID;
+CREATE PROCEDURE GetTotalPagesByCategory
+    @SortOrder NVARCHAR(4) = 'ASC'
+AS
+BEGIN
+    SELECT Категорія, SUM(КількістьСторінок) AS ЗагальнаКількістьСторінок
+    FROM Books
+    GROUP BY Категорія
+    ORDER BY SUM(КількістьСторінок) @SortOrder;
+END;
 
-8.
-SELECT b1.Title AS Book1, b2.Title AS Book2, b3.Title AS Book3, b1.Price AS BookPrice
-FROM Books b1
-JOIN Books b2 ON b1.Price = b2.Price
-JOIN Books b3 ON b1.Price = b3.Price
-WHERE b1.BookID < b2.BookID AND b2.BookID < b3.BookID;
+5. Вивести середню вартість книг по темі 'Використання ПК' і категорії 'Linux'
 
-9.
-SELECT *
-FROM Books
-WHERE Category = 'C++';
-
-10.
-SELECT DISTINCT Publisher
-FROM Books
-WHERE Pages > 400;
-
-11.
-SELECT Category
-FROM Books
-GROUP BY Category
-HAVING COUNT(*) > 3;
-
-12.
-SELECT *
-FROM Books
-WHERE Publisher = 'BHV';
+CREATE PROCEDURE GetAveragePriceByTopicAndCategory
+    @Тема NVARCHAR(50),
+    @Категорія NVARCHAR(50)
+AS
+BEGIN
+    SELECT AVG(Ціна) AS СередняВартість
+    FROM Books
+    WHERE Тема = @Тема AND Категорія = @Категорія;
+END;
 
 
-13.
-SELECT *
-FROM Books
-WHERE Publisher <> 'BHV';
 
-14.
-SELECT Topic AS Title
-FROM Books
-UNION
-SELECT Category AS Title
-FROM Books
-ORDER BY Title;
 
-15.
-SELECT SUBSTRING_INDEX(Title, ' ', 1) AS FirstWord
-FROM Books
-UNION
-SELECT Category
-FROM Books
-GROUP BY Category
-ORDER BY FirstWord DESC;
 
+
+
+
+6. Вивести всі дані універсального відношення
+
+CREATE PROCEDURE GetAllBooks
+AS
+BEGIN
+    SELECT *
+    FROM Books;
+END;
+
+7. Вивести пари книг, що мають однакову кількість сторінок
+
+CREATE PROCEDURE GetBooksBySamePageCount
+AS
+BEGIN
+    SELECT a.НазваКниги AS Книга1, b.НазваКниги AS Книга2, a.КількістьСторінок
+    FROM Books a
+    JOIN Books b ON a.КількістьСторінок = b.КількістьСторінок AND a.НазваКниги <> b.НазваКниги;
+END;
+
+8. Вивести тріади книг, що мають однакову ціну
+
+CREATE PROCEDURE GetBooksBySamePrice
+AS
+BEGIN
+    SELECT a.НазваКниги AS Книга1, b.НазваКниги AS Книга2, c.НазваКниги AS Книга3, a.Ціна
+    FROM Books a
+    JOIN Books b ON a.Ціна = b.Ціна AND a.НазваКниги <> b.НазваКниги
+    JOIN Books c ON a.Ціна = c.Ціна AND b.НазваКниги <> c.НазваКниги AND a.НазваКниги <> c.НазваКниги;
+END;
+
+9. Вивести всі книги категорії 'C ++'
+
+CREATE PROCEDURE GetBooksByCategory
+    @Категорія NVARCHAR(50)
+AS
+BEGIN
+    SELECT *
+    FROM Books
+    WHERE Категорія = @Категорія;
+END;
+
+10. Вивести список видавництв, у яких розмір книг перевищує 400 сторінок
+
+CREATE PROCEDURE GetPublishersByPageCount
+AS
+BEGIN
+    SELECT DISTINCT НазваВидавництва
+    FROM Books
+    WHERE КількістьСторінок > 400;
+END;
+
+11. Вивести список категорій за якими більше 3-х книг
+
+CREATE PROCEDURE GetCategoriesWithMoreThanThreeBooks
+AS
+BEGIN
+    SELECT Категорія
+    FROM Books
+    GROUP BY Категорія
+    HAVING COUNT(*) > 3;
+END;
+
+
+
+12. Вивести список книг видавництва 'BHV', якщо в списку є хоча б одна книга цього видавництва
+
+CREATE PROCEDURE GetBooksFromPublisherIfExists
+    @Publisher NVARCHAR(50)
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM Books WHERE НазваВидавництва = @Publisher)
+    BEGIN
+        SELECT *
+        FROM Books
+        WHERE НазваВидавництва = @Publisher;
+    END
+END;
+
+13. Вивести список книг видавництва 'BHV', якщо в списку немає жодної книги цього видавництва
+
+CREATE PROCEDURE GetBooksIfPublisherNotExists
+    @Publisher NVARCHAR(50)
+AS
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Books WHERE НазваВидавництва = @Publisher)
+    BEGIN
+        SELECT *
+        FROM Books;
+    END
+END;
+
+
+
+
+
+
+14. Вивести відсортоване загальний список назв тем і категорій
+
+CREATE PROCEDURE GetSortedTopicsAndCategories
+AS
+BEGIN
+    SELECT DISTINCT Тема, Категорія
+    FROM Books
+    ORDER BY Тема, Категорія;
+END;
+
+15. Вивести відсортований в зворотному порядку загальний список перших слів назв книг і категорій що не повторюються
+
+CREATE PROCEDURE GetSortedFirstWords
+AS
+BEGIN
+    SELECT DISTINCT LEFT(НазваКниги, CHARINDEX(' ', НазваКниги + ' ') - 1) AS ПершеСлово, Категорія
+    FROM Books
+    ORDER BY ПершеСлово DESC;
+END;
